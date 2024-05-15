@@ -16,13 +16,13 @@ class Problem:
 
     def add_testcase(self, testcase: TestCase):
         """Add a testcase for this problem."""
-        self.testcases[testcase.id] = testcase
+        self.testcases[testcase] = testcase
 
     def as_dict(self) -> dict:
         return {
             "spj": self.spj,
             "testcases": {
-                key: val.as_dict() for key, val in self.testcases.items()
+                testcase.id: testcase.as_dict() for testcase in self.testcases.values()
             },
         }
 

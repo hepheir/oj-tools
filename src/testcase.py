@@ -1,5 +1,36 @@
 from pathlib import Path
 import hashlib
+import textwrap
+
+
+class TestCaseIO:
+    def __init__(self) -> None:
+        self._content = ''
+
+    def __str__(self) -> str:
+        return self._content
+
+    def __len__(self) -> int:
+        return len(self._content)
+
+    def from_text(self, text: str, dedent=False, strip=True):
+        self._content = text
+        self._post_process(dedent=dedent, strip=strip)
+
+    def from_file(self, file_path: str, dedent=False, strip=True):
+        with open(file_path, 'r') as f:
+            self._content = f.read()
+        self._post_process(dedent=dedent, strip=strip)
+
+    def extract_as_file(self, file_path: str) -> None:
+        with open(file_path, 'w') as f:
+            f.write(self._content)
+
+    def _post_process(self, dedent: bool, strip: bool) -> None:
+        if dedent:
+            self._content = textwrap.dedent(self._content)
+        if strip:
+            self._content = self._content.strip()
 
 
 class TestCase:
@@ -15,20 +46,24 @@ class TestCase:
             assert auto_increment, "provide id, or enable auto_increment"
             id = str(self._auto_id())
         self._id = id
-        self._input = ''
-        self._output = ''
+        self._input = TestCaseIO()
+        self._output = TestCaseIO()
 
     def __hash__(self) -> int:
         return hash(self._id)
 
     @property
-    def input(self) -> str:
-        """content of input data."""
+    def id(self) -> str:
+        return self._id
+
+    @property
+    def input(self) -> TestCaseIO:
+        """input data."""
         return self._input
 
     @property
-    def output(self) -> str:
-        """content of output data."""
+    def output(self) -> TestCaseIO:
+        """output data."""
         return self._output
 
     @property
@@ -54,7 +89,7 @@ class TestCase:
     @property
     def stripped_output_md5(self) -> str:
         md5 = hashlib.md5()
-        md5.update(self.output.strip().encode())
+        md5.update(str(self.output).strip().encode())
         return md5.hexdigest()
 
     def as_dict(self) -> dict:
@@ -69,7 +104,5 @@ class TestCase:
     def extract_as_file(self, dir='./') -> None:
         """Save testcase as `input_name` and `output_name` in a specific directory."""
         dir_path = Path(dir)
-        with open(dir_path / self.input_name, 'w') as f:
-            f.write(self.input)
-        with open(dir_path / self.output_name, 'w') as f:
-            f.write(self.output)
+        self._input.extract_as_file(dir_path / self.input_name)
+        self._output.extract_as_file(dir_path / self.output_name)
