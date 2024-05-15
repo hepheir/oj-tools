@@ -3,12 +3,16 @@ from problem import Problem
 
 
 __all__ = [
-    'LONG_LONG_SIZE',
-    'INTEGER_SIZE',
+    'SIZE_T_UINT64',
+    'SIZE_T_INT64',
+    'SIZE_T_UINT32',
+    'SIZE_T_INT32',
     'TestCase',
     'Problem'
 ]
 
 
-LONG_LONG_SIZE = 2305843009213693952
-INTEGER_SIZE = 2147483648
+SIZE_T_UINT64 = 1 << 64
+SIZE_T_INT64 = 1 << 63
+SIZE_T_UINT32 = 1 << 32
+SIZE_T_INT32 = 1 << 31
