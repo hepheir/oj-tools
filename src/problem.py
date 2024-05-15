@@ -18,15 +18,7 @@ class Problem:
         """Add a testcase for this problem."""
         self.testcases[testcase] = testcase
 
-    def as_dict(self) -> dict:
-        return {
-            "spj": self.spj,
-            "testcases": {
-                testcase.id: testcase.as_dict() for testcase in self.testcases.values()
-            },
-        }
-
-    def extract_as_files(self, dirname: typing.Optional[str]=None) -> None:
+    def extract_as_files(self, dirname: typing.Optional[str]=None, in_ext='.in', out_ext='.out') -> None:
         """Save problem in a directory.
 
         dirname: default is `./PROBLEM_TITLE`
@@ -36,9 +28,21 @@ class Problem:
         if not os.path.exists(dir_path):
             os.makedirs(dir_path)
         for testcase in self.testcases.values():
-            testcase.extract_as_files(dir=dir_path)
+            testcase.input.extract_as_file(dir_path / testcase.id+in_ext)
+            testcase.output.extract_as_file(dir_path / testcase.id+out_ext)
         with open(dir_path / info_filename, 'w') as f:
-            json.dump(self.as_dict(), f, ensure_ascii=True)
+            json.dump({
+                "spj": self.spj,
+                "testcases": {
+                    testcase.id: {
+                        "stripped_output_md5": testcase.stripped_output_md5,
+                        "input_size": testcase.input_size,
+                        "output_size": testcase.output_size,
+                        "input_name": testcase.id+in_ext,
+                        "output_name": testcase.id+out_ext,
+                    } for testcase in self.testcases.values()
+                },
+            }, f, ensure_ascii=True)
 
     def extract_as_zip(self, filename: typing.Optional[str]=None) -> None:
         """Save problem as .zip file

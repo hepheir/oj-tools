@@ -81,32 +81,7 @@ class TestCase:
         return len(self._output)
 
     @property
-    def input_name(self) -> str:
-        """A filename for the input."""
-        return f'{self._id}.in'
-
-    @property
-    def output_name(self) -> str:
-        """A filename for the output."""
-        return f'{self._id}.out'
-
-    @property
     def stripped_output_md5(self) -> str:
         md5 = hashlib.md5()
         md5.update(str(self.output).strip().encode())
         return md5.hexdigest()
-
-    def as_dict(self) -> dict:
-        return {
-            "stripped_output_md5": self.stripped_output_md5,
-            "input_size": self.input_size,
-            "output_size": self.output_size,
-            "input_name": self.input_name,
-            "output_name": self.output_name,
-        }
-
-    def extract_as_files(self, dir='./') -> None:
-        """Save testcase as `input_name` and `output_name` in a specific directory."""
-        dir_path = Path(dir)
-        self._input.extract_as_file(dir_path / self.input_name)
-        self._output.extract_as_file(dir_path / self.output_name)
