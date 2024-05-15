@@ -43,18 +43,10 @@ class TestCase:
         """content of input data."""
         return self._input
 
-    @input.setter
-    def input(self, s: str) -> None:
-        self._input = s
-
     @property
     def output(self) -> str:
         """content of output data."""
         return self._output
-
-    @output.setter
-    def output(self, s: str) -> None:
-        self._output = s
 
     @property
     def input_size(self) -> int:
