@@ -36,7 +36,7 @@ class Problem:
         if not os.path.exists(dir_path):
             os.makedirs(dir_path)
         for testcase in self.testcases.values():
-            testcase.extract_as_file(dir=dir_path)
+            testcase.extract_as_files(dir=dir_path)
         with open(dir_path / info_filename, 'w') as f:
             json.dump(self.as_dict(), f, ensure_ascii=True)
 

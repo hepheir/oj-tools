@@ -101,7 +101,7 @@ class TestCase:
             "output_name": self.output_name,
         }
 
-    def extract_as_file(self, dir='./') -> None:
+    def extract_as_files(self, dir='./') -> None:
         """Save testcase as `input_name` and `output_name` in a specific directory."""
         dir_path = Path(dir)
         self._input.extract_as_file(dir_path / self.input_name)
