@@ -18,7 +18,7 @@ class Problem:
         """Add a testcase for this problem."""
         self.testcases[testcase] = testcase
 
-    def extract_as_files(self, dirname: typing.Optional[str]=None, in_ext='.in', out_ext='.out') -> None:
+    def extract_as_dir(self, dirname: typing.Optional[str]=None, in_ext='.in', out_ext='.out') -> None:
         """Save problem in a directory.
 
         dirname: default is `./PROBLEM_TITLE`
@@ -52,7 +52,7 @@ class Problem:
         with tempfile.TemporaryDirectory() as tmp_dir:
             zip_path = Path(filename) if filename is not None else Path(f'./{self.title}.zip')
             dir_path = Path(tmp_dir)
-            self.extract_as_files(dir_path)
+            self.extract_as_dir(dir_path)
             with zipfile.ZipFile(zip_path, 'w') as fzip:
                 for basename in os.listdir(dir_path):
                     fzip.write(filename=dir_path/basename, arcname=basename)
