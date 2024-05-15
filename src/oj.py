@@ -87,18 +87,13 @@ class Problem:
             },
         }
 
-    @property
-    def default_zip_path(self) -> pathlib.Path:
-        return pathlib.Path(f'./{self.title}.zip')
-
-
     def extract_as_zip(self, filename: typing.Optional[str]=None) -> None:
         """Save problem as .zip file
 
         filename: default is `./PROBLEM_TITLE.zip`
         """
         with tempfile.TemporaryDirectory() as tmp_dir:
-            zip_path = pathlib.Path(filename) if filename is not None else self.default_zip_path
+            zip_path = pathlib.Path(filename) if filename is not None else pathlib.Path(f'./{self.title}.zip')
             dir_path = pathlib.Path(tmp_dir)
             info_filename = 'info'
 
