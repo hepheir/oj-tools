@@ -28,8 +28,8 @@ class Problem:
         if not os.path.exists(dir_path):
             os.makedirs(dir_path)
         for testcase in self.testcases.values():
-            testcase.input.extract_as_file(dir_path / testcase.id+in_ext)
-            testcase.output.extract_as_file(dir_path / testcase.id+out_ext)
+            testcase.input.extract_as_file(dir_path / (testcase.id+in_ext))
+            testcase.output.extract_as_file(dir_path / (testcase.id+out_ext))
         with open(dir_path / info_filename, 'w') as f:
             json.dump({
                 "spj": self.spj,
@@ -38,8 +38,8 @@ class Problem:
                         "stripped_output_md5": testcase.stripped_output_md5,
                         "input_size": testcase.input_size,
                         "output_size": testcase.output_size,
-                        "input_name": testcase.id+in_ext,
-                        "output_name": testcase.id+out_ext,
+                        "input_name": (testcase.id+in_ext),
+                        "output_name": (testcase.id+out_ext),
                     } for testcase in self.testcases.values()
                 },
             }, f, ensure_ascii=True)
