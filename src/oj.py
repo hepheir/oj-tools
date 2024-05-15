@@ -1,7 +1,7 @@
+from pathlib import Path
 import hashlib
 import json
 import os
-import pathlib
 import tempfile
 import typing
 import zipfile
@@ -62,7 +62,7 @@ class TestCase:
 
     def extract_as_file(self, dir='./') -> None:
         """Save testcase as `input_name` and `output_name` in a specific directory."""
-        dir_path = pathlib.Path(dir)
+        dir_path = Path(dir)
         with open(dir_path / self.input_name, 'w') as f:
             f.write(self.input)
         with open(dir_path / self.output_name, 'w') as f:
@@ -93,8 +93,8 @@ class Problem:
         filename: default is `./PROBLEM_TITLE.zip`
         """
         with tempfile.TemporaryDirectory() as tmp_dir:
-            zip_path = pathlib.Path(filename) if filename is not None else pathlib.Path(f'./{self.title}.zip')
-            dir_path = pathlib.Path(tmp_dir)
+            zip_path = Path(filename) if filename is not None else Path(f'./{self.title}.zip')
+            dir_path = Path(tmp_dir)
             info_filename = 'info'
 
             for testcase in self.testcases.values():
