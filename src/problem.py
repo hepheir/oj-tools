@@ -26,6 +26,20 @@ class Problem:
             },
         }
 
+    def extract_as_files(self, dirname: typing.Optional[str]=None) -> None:
+        """Save problem in a directory.
+
+        dirname: default is `./PROBLEM_TITLE`
+        """
+        dir_path = Path(dirname) if dirname is not None else Path(f'./{self.title}')
+        info_filename = 'info'
+        if not os.path.exists(dir_path):
+            os.makedirs(dir_path)
+        for testcase in self.testcases.values():
+            testcase.extract_as_file(dir=dir_path)
+        with open(dir_path / info_filename, 'w') as f:
+            json.dump(self.as_dict(), f, ensure_ascii=True)
+
     def extract_as_zip(self, filename: typing.Optional[str]=None) -> None:
         """Save problem as .zip file
 
@@ -34,16 +48,7 @@ class Problem:
         with tempfile.TemporaryDirectory() as tmp_dir:
             zip_path = Path(filename) if filename is not None else Path(f'./{self.title}.zip')
             dir_path = Path(tmp_dir)
-            info_filename = 'info'
-
-            for testcase in self.testcases.values():
-                testcase.extract_as_file(dir=dir_path)
-
-            with open(dir_path / info_filename, 'w') as f:
-                json.dump(self.as_dict(), f, ensure_ascii=True)
-
+            self.extract_as_files(dir_path)
             with zipfile.ZipFile(zip_path, 'w') as fzip:
-                for testcase in self.testcases.values():
-                    fzip.write(filename=dir_path / testcase.input_name, arcname=testcase.input_name)
-                    fzip.write(filename=dir_path / testcase.output_name, arcname=testcase.output_name)
-                fzip.write(filename=dir_path / info_filename, arcname=info_filename)
+                for basename in os.listdir(dir_path):
+                    fzip.write(filename=dir_path/basename, arcname=basename)
