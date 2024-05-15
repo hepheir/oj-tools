@@ -1,6 +1,7 @@
 from pathlib import Path
 import hashlib
 import textwrap
+import typing
 
 
 class TestCaseIO:
@@ -12,6 +13,9 @@ class TestCaseIO:
 
     def __len__(self) -> int:
         return len(self._content)
+
+    def from_args(self, *args: typing.Tuple[typing.Any], sep:str=' '):
+        self._content = sep.join(map(str, args))
 
     def from_text(self, text: str, dedent=False, strip=True):
         self._content = text
