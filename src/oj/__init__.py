@@ -1,5 +1,5 @@
-from testcase import TestCase
-from problem import Problem
+from oj.testcase import TestCase
+from oj.problem import Problem
 
 
 __all__ = [

@@ -3,7 +3,6 @@ import hashlib
 import textwrap
 import typing
 
-
 class TestCaseIO:
     def __init__(self) -> None:
         self._content = ''
