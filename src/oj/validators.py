@@ -8,6 +8,9 @@ T = TypeVar('T')
 
 
 class AbstraceValidator(Generic[T], abc.ABC):
+    def validate(self, *objs: Tuple[T]) -> bool:
+        return self.validate_all(objs)
+
     @abc.abstractmethod
     def validate_one(self, obj: T) -> bool:
         ...
