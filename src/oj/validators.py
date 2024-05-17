@@ -1,4 +1,5 @@
-from typing import Generic, Iterable, TypeVar
+from typing import Generic, Iterable, TypeVar, Tuple
+import abc
 
 from oj.constants import *
 
@@ -6,9 +7,10 @@ from oj.constants import *
 T = TypeVar('T')
 
 
-class Validator(Generic[T]):
+class AbstraceValidator(Generic[T], abc.ABC):
+    @abc.abstractmethod
     def validate_one(self, obj: T) -> bool:
-        raise NotImplementedError
+        ...
 
     def validate_all(self, iterable: Iterable[T]) -> bool:
         return all(map(self.validate_one, iterable))
@@ -17,7 +19,7 @@ class Validator(Generic[T]):
         return any(map(self.validate_one, iterable))
 
 
-class RangeValidator(Generic[T], Validator[T]):
+class RangeValidator(Generic[T], AbstraceValidator[T]):
     def __init__(self, lo: T = None, hi: T = None) -> None:
         super().__init__()
         self.lo = lo
