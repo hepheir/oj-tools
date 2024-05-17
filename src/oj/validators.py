@@ -45,3 +45,5 @@ int64_converage_validator = RangeValidator(lo=INT64_MIN_VALUE, hi=INT64_MAX_VALU
 uint64_converage_validator = RangeValidator(lo=UINT64_MIN_VALUE, hi=UINT64_MAX_VALUE)
 
 natural_converage_validator = RangeValidator(lo=1)
+
+big_o_converage_validator = RangeValidator(hi=int(5e7))
