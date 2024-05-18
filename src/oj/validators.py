@@ -1,5 +1,7 @@
+from abc import ABC
+from abc import abstractmethod
+from dataclasses import dataclass
 from typing import *
-import abc
 
 from oj.constants import *
 
@@ -20,12 +22,12 @@ class ValidationError(Exception):
     pass
 
 
-class AbstraceValidator(Generic[T], abc.ABC):
-    def __init__(self, raise_exception = False) -> None:
+class AbstraceValidator(Generic[T], ABC):
+    def __init__(self, raise_exception=True) -> None:
         super().__init__()
         self._raise_exception = raise_exception
 
-    @abc.abstractmethod
+    @abstractmethod
     def __validator__(self, obj: T) -> bool:
         ...
 
@@ -42,8 +44,11 @@ class AbstraceValidator(Generic[T], abc.ABC):
         return self.validate(*iterable, method=any)
 
 
-class RangeValidator(Generic[T], AbstraceValidator[T]):
-    def __init__(self, lo: T = None, hi: T = None, raise_exception = False) -> None:
+class RangeValidator(AbstraceValidator[float]):
+    def __init__(self,
+                 lo: float=None,
+                 hi: float=None,
+                 raise_exception=True) -> None:
         """특정 범위에 있는지를 검사한다.
 
         lo 이상 hi 이하의 범위에 있지 않다면 예외를 발생시킨다.
@@ -51,46 +56,78 @@ class RangeValidator(Generic[T], AbstraceValidator[T]):
         super().__init__(raise_exception=raise_exception)
         self.lo = lo
         self.hi = hi
+        if lo is not None and hi is not None and lo > hi:
+            raise ValueError('하한이 상한보다 높을 수 없습니다.')
 
-    def __validator__(self, obj: T) -> bool:
-        if (self.lo is not None) and (self.lo > obj):
+    def __validator__(self, x: float) -> bool:
+        if (self.lo is not None) and (self.lo > x):
             return False
-        if (self.hi is not None) and (self.hi < obj):
+        if (self.hi is not None) and (self.hi < x):
             return False
         return True
 
 
 class TimeComplexityValidator(RangeValidator[float]):
-    def __init__(self, seconds: float, T_per_second: float = 5e8, raise_exception = False) -> None:
-        super().__init__(hi=T_per_second * seconds, raise_exception=raise_exception)
-
-
-class IntCoverageValidator(RangeValidator[float]):
     def __init__(self,
-                 allow_int32=False,
-                 allow_uint32=False,
-                 allow_int64=False,
-                 allow_uint64=False,
-                 allow_natural=False,
-                 raise_exception=False) -> None:
-        if not any([allow_int32, allow_uint32, allow_int64, allow_uint64]):
-            raise ValueError("적어도 하나 이상의 자료형은 허용해야 합니다.")
-        lo = []
-        hi = []
-        if allow_int32:
-            lo.append(INT32_MIN_VALUE)
-            hi.append(INT32_MAX_VALUE)
-        if allow_uint32:
-            lo.append(UINT32_MIN_VALUE)
-            hi.append(UINT32_MAX_VALUE)
-        if allow_int64:
-            lo.append(INT64_MIN_VALUE)
-            hi.append(INT64_MAX_VALUE)
-        if allow_uint64:
-            lo.append(UINT64_MIN_VALUE)
-            hi.append(UINT64_MAX_VALUE)
-        if allow_natural:
-            lo.append(1)
-        super().__init__(lo=min(lo, default=None),
-                         hi=max(hi, default=None),
+                 seconds: float,
+                 T_per_second: float=5e8,
+                 raise_exception=True) -> None:
+        super().__init__(hi=T_per_second * seconds,
+                         raise_exception=raise_exception)
+
+
+
+@dataclass
+class Rule:
+    lo: Optional[float]
+    hi: Optional[float]
+    allow: bool
+
+
+class RuleBasedRangeValidator(AbstraceValidator[float]):
+    def __init__(self, rules: Iterable[Rule], raise_exception=True) -> None:
+        """나중에 추가된 규칙이 더 높은 우선 순위를 갖는다."""
+        super().__init__(raise_exception=raise_exception)
+        self._rules: List[Rule] = [*rules]
+
+    def __validator__(self, x: float) -> bool:
+        for rule in self._rules:
+            if rule.allow and not self._is_in_range(x, rule.lo, rule.hi):
+                return False
+            if not rule.allow and self._is_in_range(x, rule.lo, rule.hi):
+                return False
+        return True
+
+    def _is_in_range(self, x: float, lo: float, hi: float) -> bool:
+        if (lo is not None) and (lo > x):
+            return False
+        if (hi is not None) and (hi < x):
+            return False
+        return True
+
+
+class IntCoverageValidator(RuleBasedRangeValidator):
+    def __init__(self,
+                 allow_int32=None,
+                 allow_uint32=None,
+                 allow_int64=None,
+                 allow_uint64=None,
+                 allow_natural=None,
+                 raise_exception=True) -> None:
+        rules = [
+            rule
+            for rule in [
+                Rule(lo=INT32_MIN_VALUE,    hi=INT32_MAX_VALUE,     allow=allow_int32),
+                Rule(lo=UINT32_MIN_VALUE,   hi=UINT32_MAX_VALUE,    allow=allow_uint32),
+                Rule(lo=INT64_MIN_VALUE,    hi=INT64_MAX_VALUE,     allow=allow_int64),
+                Rule(lo=UINT64_MIN_VALUE,   hi=UINT64_MAX_VALUE,    allow=allow_uint64),
+                Rule(lo=1,                  hi=None,                allow=allow_natural),
+            ]
+            if rule.allow is not None
+        ]
+
+        if len(rules) == 0:
+            raise ValueError("적어도 하나 이상의 제약조건을 추가해야 합니다.")
+
+        super().__init__(rules=rules,
                          raise_exception=raise_exception)
