@@ -1,4 +1,4 @@
-from typing import Generic, Iterable, TypeVar, Tuple
+from typing import *
 import abc
 
 from oj.constants import *
@@ -7,28 +7,43 @@ from oj.constants import *
 T = TypeVar('T')
 
 
+class ValidationError(Exception):
+    pass
+
+
 class AbstraceValidator(Generic[T], abc.ABC):
-    def validate(self, *objs: Tuple[T]) -> bool:
-        return self.validate_all(objs)
+    def __init__(self, raise_exception = False) -> None:
+        super().__init__()
+        self._raise_exception = raise_exception
 
     @abc.abstractmethod
-    def validate_one(self, obj: T) -> bool:
+    def __validator__(self, obj: T) -> bool:
         ...
 
+    def validate(self, *objs: Tuple[T], method: Callable[[Iterable[T]], bool]=all) -> bool:
+        is_validated = method(map(self.__validator__, objs))
+        if is_validated or not self._raise_exception:
+            return is_validated
+        raise ValidationError(f'{objs} did not passed the validation.')
+
     def validate_all(self, iterable: Iterable[T]) -> bool:
-        return all(map(self.validate_one, iterable))
+        return self.validate(*iterable, method=all)
 
     def validate_any(self, iterable: Iterable[T]) -> bool:
-        return any(map(self.validate_one, iterable))
+        return self.validate(*iterable, method=any)
 
 
 class RangeValidator(Generic[T], AbstraceValidator[T]):
-    def __init__(self, lo: T = None, hi: T = None) -> None:
-        super().__init__()
+    def __init__(self, lo: T = None, hi: T = None, raise_exception = False) -> None:
+        """특정 범위에 있는지를 검사한다.
+
+        lo 이상 hi 이하의 범위에 있지 않다면 예외를 발생시킨다.
+        """
+        super().__init__(raise_exception=raise_exception)
         self.lo = lo
         self.hi = hi
 
-    def validate_one(self, obj: T) -> bool:
+    def __validator__(self, obj: T) -> bool:
         if (self.lo is not None) and (self.lo > obj):
             return False
         if (self.hi is not None) and (self.hi < obj):
