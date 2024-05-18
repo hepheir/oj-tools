@@ -4,6 +4,15 @@ import abc
 from oj.constants import *
 
 
+__all__ = [
+    'ValidationError',
+    'AbstractValidator',
+    'RangeValidator',
+    'TimeComplexityValidator',
+    'IntCoverageValidator',
+]
+
+
 T = TypeVar('T')
 
 
@@ -51,14 +60,37 @@ class RangeValidator(Generic[T], AbstraceValidator[T]):
         return True
 
 
-# Built-in validators
+class TimeComplexityValidator(RangeValidator[float]):
+    def __init__(self, seconds: float, T_per_second: float = 5e8, raise_exception = False) -> None:
+        super().__init__(hi=T_per_second * seconds, raise_exception=raise_exception)
 
-int32_converage_validator = RangeValidator(lo=INT32_MIN_VALUE, hi=INT32_MAX_VALUE)
-uint32_converage_validator = RangeValidator(lo=UINT32_MIN_VALUE, hi=UINT32_MAX_VALUE)
 
-int64_converage_validator = RangeValidator(lo=INT64_MIN_VALUE, hi=INT64_MAX_VALUE)
-uint64_converage_validator = RangeValidator(lo=UINT64_MIN_VALUE, hi=UINT64_MAX_VALUE)
-
-natural_converage_validator = RangeValidator(lo=1)
-
-big_o_converage_validator = RangeValidator(hi=int(5e7))
+class IntCoverageValidator(RangeValidator[float]):
+    def __init__(self,
+                 allow_int32=False,
+                 allow_uint32=False,
+                 allow_int64=False,
+                 allow_uint64=False,
+                 allow_natural=False,
+                 raise_exception=False) -> None:
+        if not any([allow_int32, allow_uint32, allow_int64, allow_uint64]):
+            raise ValueError("적어도 하나 이상의 자료형은 허용해야 합니다.")
+        lo = []
+        hi = []
+        if allow_int32:
+            lo.append(INT32_MIN_VALUE)
+            hi.append(INT32_MAX_VALUE)
+        if allow_uint32:
+            lo.append(UINT32_MIN_VALUE)
+            hi.append(UINT32_MAX_VALUE)
+        if allow_int64:
+            lo.append(INT64_MIN_VALUE)
+            hi.append(INT64_MAX_VALUE)
+        if allow_uint64:
+            lo.append(UINT64_MIN_VALUE)
+            hi.append(UINT64_MAX_VALUE)
+        if allow_natural:
+            lo.append(1)
+        super().__init__(lo=min(lo, default=None),
+                         hi=max(hi, default=None),
+                         raise_exception=raise_exception)
